@@ -1,0 +1,21 @@
+[package]
+name = "aoc2024"
+version = "0.1.0"
+edition = "2021"
+authors = ["Orrin Jelo <orrinDOTjeloATgmailDOTcom>"]
+
+[dependencies]
+itertools = "~0.13.0"
+log = "~0.4.22"
+env_logger = "~0.11.5"
+regex = "~1.11.1"
+rustop = "~1.1.4"
+log4rs = "~1.3.0"
+trees = "0.4.2"
+plotters = "0.3.7"
+gif = "0.13.1"
+owo-colors = "4.1.0"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
