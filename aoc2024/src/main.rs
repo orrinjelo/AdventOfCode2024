@@ -42,6 +42,8 @@ fn run_problem(num: i32, input: Vec<String>) {
         // Example problem (problem from a previous year!)
         0 => execute_problem(num, input, problems::problem00::problem_001, problems::problem00::problem_002),
         // Add problems here as they arrive
+        1 => execute_problem(num, input, problems::problem01::problem_011, problems::problem01::problem_012),
+        2 => execute_problem(num, input, problems::problem02::problem_021, problems::problem02::problem_022),
         _ => warn!("Problem number not available.")
     }
 }
@@ -85,7 +87,7 @@ fn main() {
 
     // debug!("{:?}", args.number);
 
-    info!("==== Advent of Code 2023 ====");
+    info!("==== Advent of Code 2024 ====");
 
     // Parse args
     if args.run_all {
@@ -98,7 +100,7 @@ fn main() {
         }
     } else {
         if let Some(num) = args.number {
-            let filename = ifelse!(args.input_file.is_none(), format!("aoc2023/inputs/{:02}.txt", num).to_string(), args.input_file.unwrap());
+            let filename = ifelse!(args.input_file.is_none(), format!("aoc2024/inputs/{:02}.txt", num).to_string(), args.input_file.unwrap());
             debug!("filename: {:?}", filename);
             let input = util::load_file(filename);
             run_problem(num, input.clone());
