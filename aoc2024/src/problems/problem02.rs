@@ -1,6 +1,6 @@
 use log::{trace, debug, info, warn, error}; // trace, debug, info, warn, error
 use crate::util::RetType;
-use std::num;
+// use std::num;
 // use std::collections::HashMap;
 
 #[allow(dead_code)]
@@ -49,6 +49,68 @@ pub fn is_safe_levels(levels: Vec<i32>) -> bool {
     return true;
 }
 
+#[allow(dead_code)]
+pub fn is_safe_enough_levels(levels: Vec<i32>) -> bool {
+    let mut state = 0; // 0 = unset, 1 = inc, 2 = dec
+    let mut maybe_unsafe = 0; // 0 = safe, 1 = fault, 2 = unsafe
+    let mut last_state = levels[0];
+    for i in 1..levels.len() {
+        if (last_state - levels[i]).abs() > 3 || last_state == levels[i] {
+            if maybe_unsafe >= 1 {
+                // debug!("Fails step size: {}, {}", last_state, levels[i]);
+                return false;
+            } else {
+                maybe_unsafe += 1;
+            }
+        } else if last_state > levels[i] {
+            if state == 0 {
+                state = 2;
+                last_state = levels[i];
+            } else if state == 1 {
+                // debug!("Fails dec.");
+                if maybe_unsafe >= 1 {
+                    return false;
+                } else {
+                    maybe_unsafe += 1;
+                }
+            } else {
+                last_state = levels[i];
+            }
+        } else {
+            if state == 0 {
+                state = 1;
+                last_state = levels[i];
+            } else if state == 2 {
+                // debug!("Fails inc.");
+                if maybe_unsafe >= 1 {
+                    return false;
+                } else {
+                    maybe_unsafe += 1;
+                }
+            } else {
+                last_state = levels[i];
+            }
+        }
+    }
+    return true;
+}
+
+pub fn is_really_safe_enough(levels: Vec<i32>) -> bool {
+    if is_safe_levels(levels.clone()) {
+        return true;
+    }
+    // Gonna get messy...
+    for idx in 0..levels.len() {
+        let mut levels_copy = levels.clone();
+        levels_copy.remove(idx);
+        if is_safe_levels(levels_copy) {
+            return true; // Found one!
+        }
+    }
+
+    return false;
+}
+
 /**
  * Problem #02, Part 1
  */
@@ -65,8 +127,12 @@ pub fn problem_021(input: Vec<String>) -> RetType {
  * Problem #02, Part 2
  */
 pub fn problem_022(input: Vec<String>) -> RetType {
-    RetType::U32( 0 )
-
+    return RetType::U32(
+        parse_levels(input)
+            .into_iter()
+            .map(|x| if is_really_safe_enough(x) {1} else {0})
+            .sum()
+    )
 }
 
 #[cfg(test)]
@@ -130,13 +196,38 @@ mod tests {
     }
 
     #[test]
+    fn test_maybe_safe() {
+        assert_eq!(is_safe_enough_levels(vec!(7, 6, 4, 2, 1)), true);
+        assert_eq!(is_safe_enough_levels(vec!(1, 2, 7, 8, 9)), false);
+        assert_eq!(is_safe_enough_levels(vec!(9, 7, 6, 2, 1)), false);
+        assert_eq!(is_safe_enough_levels(vec!(1, 3, 2, 4, 5)), true);
+        assert_eq!(is_safe_enough_levels(vec!(8, 6, 4, 4, 1)), true);
+        assert_eq!(is_safe_enough_levels(vec!(1, 3, 6, 7, 9)), true);
+    }
+
+    #[test]
+    fn test_really_maybe_safe() {
+        assert_eq!(is_really_safe_enough(vec!(7, 6, 4, 2, 1)), true);
+        assert_eq!(is_really_safe_enough(vec!(1, 2, 7, 8, 9)), false);
+        assert_eq!(is_really_safe_enough(vec!(9, 7, 6, 2, 1)), false);
+        assert_eq!(is_really_safe_enough(vec!(1, 3, 2, 4, 5)), true);
+        assert_eq!(is_really_safe_enough(vec!(8, 6, 4, 4, 1)), true);
+        assert_eq!(is_really_safe_enough(vec!(1, 3, 6, 7, 9)), true);
+    }
+
+    #[test]
     fn test_part022() {
         init();
         let input_str = vec!(
-            "".to_string(),
+            "7 6 4 2 1".to_string(),
+            "1 2 7 8 9".to_string(),
+            "9 7 6 2 1".to_string(),
+            "1 3 2 4 5".to_string(),
+            "8 6 4 4 1".to_string(),
+            "1 3 6 7 9".to_string()
         );
 
-        assert_eq!(problem_022(input_str), RetType::U32(0));
+        assert_eq!(problem_022(input_str), RetType::U32(4));
     }
 
 }
