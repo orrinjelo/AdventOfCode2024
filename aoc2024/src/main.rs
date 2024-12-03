@@ -44,6 +44,7 @@ fn run_problem(num: i32, input: Vec<String>) {
         // Add problems here as they arrive
         1 => execute_problem(num, input, problems::problem01::problem_011, problems::problem01::problem_012),
         2 => execute_problem(num, input, problems::problem02::problem_021, problems::problem02::problem_022),
+        3 => execute_problem(num, input, problems::problem03::problem_031, problems::problem03::problem_032),
         _ => warn!("Problem number not available.")
     }
 }
