@@ -37,6 +37,21 @@ fn execute_problem(num: i32, input: Vec<String>, part1: fn(Vec<String>) -> RetTy
     info!("Problem {}; Part 2: {} (Runtime: {})", num, result_2, format_time(end_elapsed));    
 }
 
+fn benchmark_problem(num: i32, input: Vec<String>, part1: fn(Vec<String>) -> RetType, part2: fn(Vec<String>) -> RetType) {
+    let start = Instant::now();
+    for _ in 0..1000 {
+        part1(input.clone());
+    }
+    let then_elapsed = start.elapsed() / 1000;
+    let then = Instant::now();
+    for _ in 0..1000 {
+        part2(input.clone());
+    }
+    let end_elapsed = then.elapsed() / 1000;
+    info!("Problem {}; Part 1 Runtime: {}", num, format_time(then_elapsed));
+    info!("Problem {}; Part 2 Runtime: {}", num, format_time(end_elapsed));    
+}
+
 fn run_problem(num: i32, input: Vec<String>) {
     match num {
         // Example problem (problem from a previous year!)
@@ -49,6 +64,19 @@ fn run_problem(num: i32, input: Vec<String>) {
     }
 }
 
+fn run_benchmark_problem(num: i32, input: Vec<String>) {
+    match num {
+        // Example problem (problem from a previous year!)
+        0 => benchmark_problem(num, input, problems::problem00::problem_001, problems::problem00::problem_002),
+        // Add problems here as they arrive
+        1 => benchmark_problem(num, input, problems::problem01::problem_011, problems::problem01::problem_012),
+        2 => benchmark_problem(num, input, problems::problem02::problem_021, problems::problem02::problem_022),
+        3 => benchmark_problem(num, input, problems::problem03::problem_031, problems::problem03::problem_032),
+        _ => warn!("Problem number not available.")
+    }
+}
+
+
 fn visualize_problem(num: i32, input: Vec<String>) {
     match num {
         0 => problems::problem00::visualize_00(input),
@@ -59,20 +87,6 @@ fn visualize_problem(num: i32, input: Vec<String>) {
 fn main() {
     // Set up logging
     env_logger::builder()
-        // .format(|buf, record| {
-        //     let mut style = buf.style();
-
-        //     let color = match record.level() {
-        //         Level::Trace => env_logger::fmt::Color::Magenta,
-        //         Level::Debug => env_logger::fmt::Color::Cyan,
-        //         Level::Info  => env_logger::fmt::Color::Green,
-        //         Level::Warn  => env_logger::fmt::Color::Yellow,
-        //         Level::Error => env_logger::fmt::Color::Red,
-        //     };
-
-        //     style.set_color(color);
-        //     writeln!(buf, "{}: {}", style.value(record.level()), record.args())
-        // })
         .init();
 
     // Set up runtime arguments
@@ -81,6 +95,7 @@ fn main() {
         opt run_all:bool, desc: "Run all problems.";
         opt input_file:Option<String>, desc: "Custom input file for this problem.";
         opt visualization:bool, desc: "Run the visualization.";
+        opt benchmark:bool, desc: "Run benchmarking.";
         param number:Option<i32>, desc:"Problem number to run.";
     };
 
@@ -92,12 +107,19 @@ fn main() {
 
     // Parse args
     if args.run_all {
-        for i in 0..1 {
+        for i in 0..3 {
             let filename = format!("aoc2024/inputs/{:02}.txt", i).to_string();
             let input = util::load_file(filename);
             run_problem(i, input);
             info!("=========================");
             // No visualization
+        }
+    } else if args.benchmark {
+        if let Some(num) = args.number {
+            let filename = ifelse!(args.input_file.is_none(), format!("aoc2024/inputs/{:02}.txt", num).to_string(), args.input_file.unwrap());
+            debug!("filename: {:?}", filename);
+            let input = util::load_file(filename);
+            run_benchmark_problem(num, input.clone());
         }
     } else {
         if let Some(num) = args.number {
