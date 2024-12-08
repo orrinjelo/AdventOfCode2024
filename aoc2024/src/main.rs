@@ -62,6 +62,9 @@ fn run_problem(num: i32, input: Vec<String>) {
         3 => execute_problem(num, input, problems::problem03::problem_031, problems::problem03::problem_032),
         4 => execute_problem(num, input, problems::problem04::problem_041, problems::problem04::problem_042),
         5 => execute_problem(num, input, problems::problem05::problem_051, problems::problem05::problem_052),
+        6 => execute_problem(num, input, problems::problem06::problem_061, problems::problem06::problem_062),
+        7 => execute_problem(num, input, problems::problem07::problem_071, problems::problem07::problem_072),
+        8 => execute_problem(num, input, problems::problem08::problem_081, problems::problem08::problem_082),
         _ => warn!("Problem number not available.")
     }
 }
@@ -75,6 +78,10 @@ fn run_benchmark_problem(num: i32, input: Vec<String>) {
         2 => benchmark_problem(num, input, problems::problem02::problem_021, problems::problem02::problem_022),
         3 => benchmark_problem(num, input, problems::problem03::problem_031, problems::problem03::problem_032),
         4 => benchmark_problem(num, input, problems::problem04::problem_041, problems::problem04::problem_042),
+        5 => benchmark_problem(num, input, problems::problem05::problem_051, problems::problem05::problem_052),
+        6 => benchmark_problem(num, input, problems::problem06::problem_061, problems::problem06::problem_062),
+        7 => benchmark_problem(num, input, problems::problem07::problem_071, problems::problem07::problem_072),
+        8 => benchmark_problem(num, input, problems::problem08::problem_081, problems::problem08::problem_082),
         _ => warn!("Problem number not available.")
     }
 }
