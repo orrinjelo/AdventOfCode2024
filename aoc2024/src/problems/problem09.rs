@@ -1,6 +1,6 @@
 use log::{trace, debug, info, warn, error}; // trace, debug, info, warn, error
 use crate::util::RetType;
-// use regex::Regex;
+use std::fmt;
 
 #[allow(dead_code)]
 fn _get_rid_of_log_unused_import_warnings() {
@@ -66,6 +66,25 @@ impl Disk {
     }
 }
 
+
+impl fmt::Display for Disk {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let _ = write!(f, "|");
+        for x in self.hdd.clone() {
+            match x {
+                MemNugget::FILE(file) => {
+                    let _ = write!(f, "{}|", file.filename);
+                },
+                MemNugget::EMPTY => {
+                    let _ = write!(f, ".|");
+                }
+            }
+        }
+        let _ = write!(f, "\n");
+        fmt::Result::Ok(())
+    }
+}
+
 pub fn fragment_disk(disk: &mut Disk) {
     for dp in 0..disk.hdd.len() {
         if disk.hdd[dp] == MemNugget::EMPTY {
@@ -85,34 +104,36 @@ pub fn fragment_disk(disk: &mut Disk) {
 }
 
 pub fn defragment_disk(disk: &mut Disk) {
+    // debug!("{}", disk);
     for dp in 0..disk.hdd.len() {
-        if disk.hdd[dp] == MemNugget::EMPTY {
-            // Check empty size
-            let mut empty_size: usize = 0;
-            for dpi in dp..disk.hdd.len() {
-                if disk.hdd[dpi] == MemNugget::EMPTY {
-                    empty_size += 1;
-                }
-            }
-            // Identify a working file block
-            for fp in 1..disk.hdd.len() {
-                let fpr = disk.hdd.len() - fp;
-                if dp == fpr {
-                    break;
-                }
-                match &disk.hdd[fpr] {
-                    MemNugget::EMPTY => {},
-                    MemNugget::FILE(f) => {
-                        if f.filesize <= empty_size as u32 {
-                            // Do the move
-                            for dpi in 0..empty_size {
-                                disk.hdd[dp+dpi] = disk.hdd[fpr-dpi].clone();
-                                disk.hdd[fpr-dpi] = MemNugget::EMPTY;
+        // debug!("{}", disk.clone());
+        let dpr = disk.hdd.len() - dp - 1;
+        match &disk.hdd[dpr] {
+            MemNugget::FILE(f) => {
+                for fp in 0..dpr {
+                    if disk.hdd[fp] == MemNugget::EMPTY {
+                        // Check empty size
+                        let mut empty_size: usize = 0;
+                        for dpi in fp..disk.hdd.len() {
+                            if disk.hdd[dpi] == MemNugget::EMPTY {
+                                empty_size += 1;
+                            } else {
+                                break;
                             }
+                        }
+                        // debug!("{}", disk);
+                        // debug!("fp: {}, ES: {}", fp, empty_size);
+                        if f.filesize <= empty_size as u32 {
+                            for dpi in 0..f.filesize as usize {
+                                disk.hdd[fp+dpi] = disk.hdd[dpr-dpi].clone();
+                                disk.hdd[dpr-dpi] = MemNugget::EMPTY;
+                            }
+                            break;
                         }
                     }
                 }
-            }
+            },
+            MemNugget::EMPTY => {}
         }
     }
 }
@@ -137,7 +158,9 @@ pub fn problem_091(input: Vec<String>) -> RetType {
 }
 
 pub fn problem_092(input: Vec<String>) -> RetType {
-    return RetType::U32(0);
+    let mut disk = Disk::new(input);
+    defragment_disk(&mut disk);
+    return RetType::U64(calc_checksum(disk));
 }
 
 #[cfg(test)]
@@ -210,9 +233,9 @@ mod tests {
         ];
 
         let mut disk = Disk::new(input);
-        fragment_disk(&mut disk);
+        defragment_disk(&mut disk);
 
-        debug!("{:?}", disk.hdd);
+        debug!("{}", disk);
         assert_eq!(calc_checksum(disk), 2858);
 
     }
