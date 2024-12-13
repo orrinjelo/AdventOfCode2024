@@ -28,34 +28,49 @@ pub fn identify_crops(input: Vec<Vec<char>>) -> HashSet<char> {
     crops
 }
 
-// fn pt_cmp(a: &(u32, u32), other: &(u32, u32)) -> std::cmp::Ordering {
-//     if a.0 < other.0 || ( a.0 == other.0 && a.1 < other.1 ) {
-//         Less
-//     } else if a.0 > other.0 || ( a.0 == other.0 && a.1 > other.1 ) {
-//         Greater
-//     } else {
-//         Equal
-//     }
-// }
+pub fn clusters(input: Vec<(u32, u32)>) -> Vec<Vec<(u32, u32)>> {
+    let mut used = HashSet::new();
+    let mut clusters_vec: Vec<Vec<(u32, u32)>> = Vec::new();
 
+    struct Neighs<'s> { f: &'s dyn Fn(&Neighs, &mut HashSet<(u32, u32)>, (u32,u32)) -> Vec<(u32, u32)> }
+    let find_neighbors = Neighs {
+        f: &|neigh, used, x: (u32, u32)| -> Vec<(u32, u32)> {
+            used.insert(x);
+            // debug!("Finding neighbors for {:?}", x);
+            let mut neighbors = Vec::new();
+            if used.len() == input.len() {
+                return neighbors;
+            }
+            for i in input.clone() {
+                if i != x && !used.contains(&i) {
+                    if (i.0 as i32 - x.0 as i32).pow(2) + (i.1 as i32 - x.1 as i32).pow(2) == 1 {
+                        neighbors.push(i);
+                        let nn = (neigh.f)(&neigh, used, i);
+                        for n in nn {
+                            neighbors.push(n);
+                        }
+                    }
+                }
+            }
+            neighbors
+        }
+    };
 
-// /**
-//  * Cross product of OA and OB, returns magnitude
-//  * Positive for CW, negative for CCW
-//  */
-// fn cross_product(o: (u32, u32), a: (u32, u32), b: (u32, u32)) -> i32 {
-//     let left = ((a.0 as i32 - o.0 as i32) * (b.1 as i32 - o.1 as i32));
-//     let right = ((a.1 as i32 - o.1 as i32) * (b.0 as i32 - o.0 as i32));
-//     if left > right {
-//         1
-//     } else if left < right {
-//         -1
-//     } else {
-//         0
-//     }
-// }
+    let mut idx: usize = 0;
+    while idx < input.len() {
+        let mut curr = input[idx];
+        if !used.contains(&curr) {
+            let mut neighbors = (find_neighbors.f)(&find_neighbors, &mut used, curr);
+            neighbors.push(curr);
+            clusters_vec.push(neighbors);
+        }
+        idx += 1;
+    }
 
-pub fn calc_hull(input: Vec<Vec<char>>, crop_type: char) -> (u32, u32) {
+    clusters_vec
+}
+
+pub fn calc_hull(input: Vec<Vec<char>>, crop_type: char) -> Vec<(u32, u32, u32)> {
     // First, find location of all crops
     let mut crops: Vec<(u32, u32)> = Vec::new();
     for y in 0..input.len() {
@@ -67,29 +82,56 @@ pub fn calc_hull(input: Vec<Vec<char>>, crop_type: char) -> (u32, u32) {
     }
 
     // debug!("Crops for {}: {:?}", crop_type, crops);
+    let clusters_vec = clusters(crops.clone());
+    // debug!("Clusters for {}: {:?}", crop_type, clusters_vec.clone());
+    let mut hulls: Vec<(u32, u32, u32)> = Vec::new();
 
-    // Now try to figure out the hull or something
-    let mut fences = 0;
-    for crop in crops.clone() {
-        // Check all sides
-        let mut friendly_sides = 0;
-        if crop.0 > 0 && input[crop.1 as usize][crop.0 as usize-1] == crop_type {
-            friendly_sides += 1;
-        } 
-        if crop.0 < input[0].len() as u32 - 1 && input[crop.1 as usize][crop.0 as usize+1] == crop_type {
-            friendly_sides += 1;
+    for cluster in clusters_vec {
+        // Now try to figure out the hull or something
+        let mut fences = 0;
+        let mut corners = 0;
+        for crop in cluster.clone() {
+            // Check all sides
+            let mut friendly_sides = 0;
+            let mut check: u8 = 0;
+            if crop.0 > 0 && input[crop.1 as usize][crop.0 as usize-1] == crop_type {
+                friendly_sides += 1;
+            } else {
+                check |= 0x1;
+            } 
+            if crop.0 < input[0].len() as u32 - 1 && input[crop.1 as usize][crop.0 as usize+1] == crop_type {
+                friendly_sides += 1;
+            } else {
+                check |= 0x4;
+            }
+            if crop.1 > 0 && input[crop.1 as usize-1][crop.0 as usize] == crop_type {
+                friendly_sides += 1;
+            } else {
+                check |= 0x8;
+            }
+            if crop.1 < input.len() as u32 - 1 && input[crop.1 as usize+1][crop.0 as usize] == crop_type {
+                friendly_sides += 1;
+            } else {
+                check |= 0x2;
+            }
+            // debug!("crop: {:?}, sides: {}", crop, friendly_sides);
+            fences += 4 - friendly_sides;
+            // Do some esoteric mumbo-jumbo to find out corners. :)
+            if check % 3 == 0 && check > 0 {
+                corners += 1;
+            } else if vec![7, 11, 13, 14].contains(&check) {
+                corners += 2;
+            } else if check == 0xf {
+                corners += 4;
+            } else if vec![1, 2, 4, 8].contains(&check) {
+                corners += 2;
+            }
+            debug!("crop {} {:?} is a corner?: {}", crop_type, crop, check);
         }
-        if crop.1 > 0 && input[crop.1 as usize-1][crop.0 as usize] == crop_type {
-            friendly_sides += 1;
-        }
-        if crop.1 < input.len() as u32 - 1 && input[crop.1 as usize+1][crop.0 as usize] == crop_type {
-            friendly_sides += 1;
-        }
-        // debug!("crop: {:?}, sides: {}", crop, friendly_sides);
-        fences += 4 - friendly_sides;
+        hulls.push((fences, cluster.len() as u32, corners));
     }
-
-    (fences, crops.len() as u32)
+    hulls
+    
 }
 
 pub fn problem_121(input: Vec<String>) -> RetType {
@@ -97,8 +139,9 @@ pub fn problem_121(input: Vec<String>) -> RetType {
     let crops = identify_crops(parsed.clone());
     let mut s = 0u32;
     for crop in crops {
-        let (p, a) = calc_hull(parsed.clone(), crop);
-        s += p*a;
+        for (p, a, _) in calc_hull(parsed.clone(), crop) {
+            s += p*a;
+        }
     }
     return RetType::U32(s);
 }
@@ -135,11 +178,11 @@ mod tests {
 
         let parsed = parse_input(input.clone());
 
-        assert_eq!((10, 4), calc_hull(parsed.clone(), 'A'));
-        assert_eq!((8, 4), calc_hull(parsed.clone(), 'B'));
-        assert_eq!((10, 4), calc_hull(parsed.clone(), 'C'));
-        assert_eq!((4, 1), calc_hull(parsed.clone(), 'D'));
-        assert_eq!((8, 3), calc_hull(parsed.clone(), 'E'));
+        assert_eq!((10, 4, 4), calc_hull(parsed.clone(), 'A')[0]);
+        assert_eq!((8, 4, 4), calc_hull(parsed.clone(), 'B')[0]);
+        assert_eq!((10, 4, 8), calc_hull(parsed.clone(), 'C')[0]);
+        assert_eq!((4, 1, 4), calc_hull(parsed.clone(), 'D')[0]);
+        assert_eq!((8, 3, 4), calc_hull(parsed.clone(), 'E')[0]);
 
         assert_eq!(problem_121(input), RetType::U32(140));
     }
@@ -160,6 +203,26 @@ mod tests {
             "MIIISIJEEE".to_string(),
             "MMMISSJEEE".to_string(),
         ];
+
+        let parsed = parse_input(input.clone());
+        let mut crops: Vec<(u32, u32)> = Vec::new();
+        for y in 0..parsed.len() {
+            for x in 0..parsed[0].len() {
+                if parsed[y][x] == 'I' {
+                    crops.push((x as u32,y as u32));
+                }
+            }
+        }
+
+        let clusters_vec = clusters(crops);
+
+        assert_eq!(clusters_vec.len(), 2);
+
+        assert_eq!((18, 12, 10), calc_hull(parsed.clone(), 'R')[0]);
+        let ihulls = calc_hull(parsed.clone(), 'I');
+        assert_eq!((8, 4, 4), ihulls.clone()[0]);
+        assert_eq!((22, 14, 16), ihulls.clone()[1]);
+
 
         let res = problem_121(input);
         assert_eq!(RetType::U32(1930), res);
