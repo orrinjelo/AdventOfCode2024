@@ -58,7 +58,7 @@ pub fn clusters(input: Vec<(u32, u32)>) -> Vec<Vec<(u32, u32)>> {
 
     let mut idx: usize = 0;
     while idx < input.len() {
-        let mut curr = input[idx];
+        let curr = input[idx];
         if !used.contains(&curr) {
             let mut neighbors = (find_neighbors.f)(&find_neighbors, &mut used, curr);
             neighbors.push(curr);
