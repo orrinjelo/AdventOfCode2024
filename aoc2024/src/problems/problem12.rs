@@ -96,36 +96,47 @@ pub fn calc_hull(input: Vec<Vec<char>>, crop_type: char) -> Vec<(u32, u32, u32)>
             let mut check: u8 = 0;
             if crop.0 > 0 && input[crop.1 as usize][crop.0 as usize-1] == crop_type {
                 friendly_sides += 1;
-            } else {
-                check |= 0x1;
             } 
             if crop.0 < input[0].len() as u32 - 1 && input[crop.1 as usize][crop.0 as usize+1] == crop_type {
                 friendly_sides += 1;
-            } else {
-                check |= 0x4;
-            }
+            } 
             if crop.1 > 0 && input[crop.1 as usize-1][crop.0 as usize] == crop_type {
                 friendly_sides += 1;
-            } else {
-                check |= 0x8;
-            }
+            } 
             if crop.1 < input.len() as u32 - 1 && input[crop.1 as usize+1][crop.0 as usize] == crop_type {
                 friendly_sides += 1;
-            } else {
-                check |= 0x2;
-            }
+            } 
             // debug!("crop: {:?}, sides: {}", crop, friendly_sides);
             fences += 4 - friendly_sides;
-            // Do some esoteric mumbo-jumbo to find out corners. :)
-            if check % 3 == 0 && check > 0 {
-                corners += 1;
-            } else if vec![7, 11, 13, 14].contains(&check) {
-                corners += 2;
-            } else if check == 0xf {
-                corners += 4;
-            } else if vec![1, 2, 4, 8].contains(&check) {
-                corners += 2;
+            
+            #[allow(unused_doc_comments)]
+            /** 256 cominbations for 9x9 (2^8)
+             * No corners                     Two Corners                    Four corners                     Other?
+             *    X@X     XXX     @@X            X@X             X@X            X@X     XXX     X@X              XX@
+             *    X@X     @@@     X@X  (x 8)     @@X  (x 4)      @@X  (x 4)     @@@     X@X     @@@  (x 4)       X@X = 4?
+             *    X@X     XXX     X@X            XXX             X@X            X@X     XXX     @X@              XXX
+             * 
+             * One corner                                                    Three Corners                       @X@
+             *    @@@                            X@X             X@X            X@X                              X@X = 4?
+             *    @@@  (x 4)                     X@X  (x 4)      @@@  (x 8)     @@@  (x 4)                       @X@
+             *    @@X                            XXX             @XX            @@X
+             * 
+             *  8 combinations for 2x2 (2^3)
+             * ONE                ZERO
+             *  O@ OX OX           @@ X@ XX @@ @X
+             *  @X XX X@           XO XO @O @O @O
+             */
+            
+            for y_offset in 0..2 {
+                for x_offset in 0..2 {
+                    if input[crop.1 as usize + y_offset][crop.0 as usize + x_offset] != crop_type && input[crop.1 as usize][crop.0 as usize + x_offset] == input[crop.1 as usize + y_offset][crop.0 as usize] {
+                        corners += 1;
+                    } else if input[crop.1 as usize + y_offset][crop.0 as usize + x_offset] == crop_type && input[crop.1 as usize][crop.0 as usize + x_offset] != crop_type && input[crop.1 as usize + y_offset][crop.0 as usize] != crop_type {
+                        corners += 1;
+                    } // else it's not a corner
+                }
             }
+
             debug!("crop {} {:?} is a corner?: {}", crop_type, crop, check);
         }
         hulls.push((fences, cluster.len() as u32, corners));
