@@ -16,6 +16,9 @@ plotters = "0.3.7"
 gif = "0.13.1"
 owo-colors = "4.1.0"
 
+ndarray = "0.14"
+ndarray-linalg = { version = "0.13", features = ["openblas-static"] }
+
 [[bin]]
 name = "main"
 path = "src/main.rs"
