@@ -41,6 +41,7 @@ pub enum RetType {
     U32(u32),
     I32(i32),
     U64(u64),
+    I64(i64),
     U128(u128),
     STRING(String),
 }
@@ -51,6 +52,7 @@ impl fmt::Debug for RetType {
             RetType::U32(x) => write!(f, "{:?}", x),
             RetType::I32(x) => write!(f, "{:?}", x),
             RetType::U64(x) => write!(f, "{:?}", x),
+            RetType::I64(x) => write!(f, "{:?}", x),
             RetType::U128(x) => write!(f, "{:?}", x),
             RetType::STRING(x) => write!(f, "{:?}", x),
         }
@@ -64,6 +66,7 @@ impl fmt::Display for RetType {
             RetType::U32(x) => write!(f, "{}", x),
             RetType::I32(x) => write!(f, "{}", x),
             RetType::U64(x) => write!(f, "{}", x),
+            RetType::I64(x) => write!(f, "{}", x),
             RetType::U128(x) => write!(f, "{}", x),
             RetType::STRING(x) => write!(f, "{}", x),
         }
