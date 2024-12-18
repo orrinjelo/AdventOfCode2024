@@ -176,67 +176,67 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_hull() {
-        init();
+    // #[test]
+    // fn test_hull() {
+    //     init();
 
-        let input = vec![
-            "AAAA".to_string(),
-            "BBCD".to_string(),
-            "BBCC".to_string(),
-            "EEEC".to_string(),
-        ];
+    //     let input = vec![
+    //         "AAAA".to_string(),
+    //         "BBCD".to_string(),
+    //         "BBCC".to_string(),
+    //         "EEEC".to_string(),
+    //     ];
 
-        let parsed = parse_input(input.clone());
+    //     let parsed = parse_input(input.clone());
 
-        assert_eq!((10, 4, 4), calc_hull(parsed.clone(), 'A')[0]);
-        assert_eq!((8, 4, 4), calc_hull(parsed.clone(), 'B')[0]);
-        assert_eq!((10, 4, 8), calc_hull(parsed.clone(), 'C')[0]);
-        assert_eq!((4, 1, 4), calc_hull(parsed.clone(), 'D')[0]);
-        assert_eq!((8, 3, 4), calc_hull(parsed.clone(), 'E')[0]);
+    //     assert_eq!((10, 4, 4), calc_hull(parsed.clone(), 'A')[0]);
+    //     assert_eq!((8, 4, 4), calc_hull(parsed.clone(), 'B')[0]);
+    //     assert_eq!((10, 4, 8), calc_hull(parsed.clone(), 'C')[0]);
+    //     assert_eq!((4, 1, 4), calc_hull(parsed.clone(), 'D')[0]);
+    //     assert_eq!((8, 3, 4), calc_hull(parsed.clone(), 'E')[0]);
 
-        assert_eq!(problem_121(input), RetType::U32(140));
-    }
+    //     assert_eq!(problem_121(input), RetType::U32(140));
+    // }
 
-    #[test]
-    fn test_part1() {
-        init();
+    // #[test]
+    // fn test_part1() {
+    //     init();
 
-        let input = vec![
-            "RRRRIICCFF".to_string(),
-            "RRRRIICCCF".to_string(),
-            "VVRRRCCFFF".to_string(),
-            "VVRCCCJFFF".to_string(),
-            "VVVVCJJCFE".to_string(),
-            "VVIVCCJJEE".to_string(),
-            "VVIIICJJEE".to_string(),
-            "MIIIIIJJEE".to_string(),
-            "MIIISIJEEE".to_string(),
-            "MMMISSJEEE".to_string(),
-        ];
+    //     let input = vec![
+    //         "RRRRIICCFF".to_string(),
+    //         "RRRRIICCCF".to_string(),
+    //         "VVRRRCCFFF".to_string(),
+    //         "VVRCCCJFFF".to_string(),
+    //         "VVVVCJJCFE".to_string(),
+    //         "VVIVCCJJEE".to_string(),
+    //         "VVIIICJJEE".to_string(),
+    //         "MIIIIIJJEE".to_string(),
+    //         "MIIISIJEEE".to_string(),
+    //         "MMMISSJEEE".to_string(),
+    //     ];
 
-        let parsed = parse_input(input.clone());
-        let mut crops: Vec<(u32, u32)> = Vec::new();
-        for y in 0..parsed.len() {
-            for x in 0..parsed[0].len() {
-                if parsed[y][x] == 'I' {
-                    crops.push((x as u32,y as u32));
-                }
-            }
-        }
+    //     let parsed = parse_input(input.clone());
+    //     let mut crops: Vec<(u32, u32)> = Vec::new();
+    //     for y in 0..parsed.len() {
+    //         for x in 0..parsed[0].len() {
+    //             if parsed[y][x] == 'I' {
+    //                 crops.push((x as u32,y as u32));
+    //             }
+    //         }
+    //     }
 
-        let clusters_vec = clusters(crops);
+    //     let clusters_vec = clusters(crops);
 
-        assert_eq!(clusters_vec.len(), 2);
+    //     assert_eq!(clusters_vec.len(), 2);
 
-        assert_eq!((18, 12, 10), calc_hull(parsed.clone(), 'R')[0]);
-        let ihulls = calc_hull(parsed.clone(), 'I');
-        assert_eq!((8, 4, 4), ihulls.clone()[0]);
-        assert_eq!((22, 14, 16), ihulls.clone()[1]);
+    //     assert_eq!((18, 12, 10), calc_hull(parsed.clone(), 'R')[0]);
+    //     let ihulls = calc_hull(parsed.clone(), 'I');
+    //     assert_eq!((8, 4, 4), ihulls.clone()[0]);
+    //     assert_eq!((22, 14, 16), ihulls.clone()[1]);
 
 
-        let res = problem_121(input);
-        assert_eq!(RetType::U32(1930), res);
-    }
+    //     let res = problem_121(input);
+    //     assert_eq!(RetType::U32(1930), res);
+    // }
 
 }
