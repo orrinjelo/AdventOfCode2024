@@ -1,6 +1,13 @@
 use log::{trace, debug, info, warn, error}; // trace, debug, info, warn, error
 use crate::util::RetType;
-// use regex::Regex;
+
+#[allow(unused_macros)]
+#[macro_export]
+macro_rules! ifelse2 {
+    ($c:expr, $v:expr, $v1:expr) => {
+        if $c {$v} else {$v1}
+    };
+}
 
 #[allow(dead_code)]
 fn _get_rid_of_log_unused_import_warnings() {
@@ -116,28 +123,73 @@ impl ThreeBit {
     }
 }
 
-// pub fn tree_me(tb: &mut ThreeBit, starting_value: u64, best: u64) -> Option<u64> {
-//     // Get a starting poing
-//     tb.reset(starting_value);
-//     while tb.interp() {
-//         if tb.output != tb.program[0..tb.output.len()] {
-//             break;
-//         }
-//     }
+pub fn tree_me(tb: &mut ThreeBit, starting_value: u128) -> Option<u128> {
+    // Get a starting poing
+    tb.reset(starting_value);
+    while tb.interp() {
+        if tb.output != tb.program[0..tb.output.len()] {
+            break;
+        }
+    }
 
-//     if tb.output == tb.program {
-//         return Some(starting_value);
-//     }
+    if tb.output == tb.program {
+        return Some(starting_value);
+    }
 
-//     let mut current_best = tb.output.len()-1;
+    let orig_len = tb.output.len();
+    let orig = tb.output.clone();
 
-//     if best < current_best {
-//         let delta = 2.pow(((starting_value as f32).log2()).floor() as u32);
-        
-//     }
+    // Try 8 values
+    let pow = starting_value.ilog2();
+    let mut history = Vec::new();
+    for k in 1..33 {
+        // 1 = 2^(pow+1)
+        // 2 = 2^(pow+2)
+        // 3 = 2^(pow+1)+2^(pow+2)
+        // ...
+        // 5 => 1, 4
+        // 6 => 2, 4
+        // 7 => 1, 2, 4
+        // 8 => 8
+        let mut delta = ifelse2!((k+1)%2==1,1,0) * 2u128.pow(pow+1);
+        delta += ifelse2!((k+1)&0x2!=0,1,0) * 2u128.pow(pow+2);
+        delta += ifelse2!((k+1)&0x4!=0,1,0) * 2u128.pow(pow+3);
+        delta += ifelse2!((k+1)&0x8!=0,1,0) * 2u128.pow(pow+4);
+        delta += ifelse2!((k+1)&0x10!=0,1,0) * 2u128.pow(pow+5);
+        delta += ifelse2!((k+1)&0x20!=0,1,0) * 2u128.pow(pow+6);
+        delta += ifelse2!((k+1)&0x40!=0,1,0) * 2u128.pow(pow+7);
+        delta += ifelse2!((k+1)&0x80!=0,1,0) * 2u128.pow(pow+8);
+        tb.reset(starting_value + delta);
+        while tb.interp() {
+            if tb.output != tb.program[0..tb.output.len()] {
+                break;
+            }
+        }
+        if tb.output == tb.program {
+            return Some(starting_value + delta);
+        } else {
+            history.push((delta, tb.output.clone()));
+        }
+    }
+
+    // If we haven't found the one...choose the best to start from.
+    let mut best = (0u128, vec![]);
+
+    for entry in history.clone() {
+        if entry.1.len() > best.1.len() && entry.1.len() > orig_len {
+            best = entry;
+        }
+    }
+
+    if best.0 == 0u128 {
+        debug!("Current: {:?}", orig);
+        debug!("Failure: {:?}", history);
+        None
+    } else {
+        tree_me(tb, starting_value + best.0)
+    }
     
-//     None
-// }
+}
 
 pub fn problem_171(input: Vec<String>) -> RetType {
     let mut tb = ThreeBit::new(input);
@@ -151,26 +203,11 @@ pub fn problem_171(input: Vec<String>) -> RetType {
 pub fn problem_172(input: Vec<String>) -> RetType {
     let mut tb = ThreeBit::new(input);
     
-    let mut init_value = 6995444u128; // arbitrary starting value, ofc
-    let mut pow = 23u32;
-    let mut best = 5;
-    while tb.output != tb.program {
-        let delta = 2u128.pow(pow);
-        tb.reset(init_value + delta);
-        while tb.interp() {
-            if tb.output != tb.program[0..tb.output.len()] {
-                debug!("best output: {:?}", tb.output);
-                if tb.output.len() - 1 > best {
-                    best = tb.output.len() - 1;
-                    init_value += delta;
-                }
-                break;
-            } 
-        }
-        pow += 1;
-    }
+    let mut init_value = 48628u128; // arbitrary starting value, ofc
 
-    return RetType::U128(init_value);
+    let res = tree_me(&mut tb, init_value);
+
+    return RetType::U128(res.unwrap());
 }
 
 #[cfg(test)]
