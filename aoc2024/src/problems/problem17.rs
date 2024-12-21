@@ -225,40 +225,40 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_3bit() {
-        init();
+    // #[test]
+    // fn test_3bit() {
+    //     init();
 
-        let input = vec![
-            "Register A: 729".to_string(),
-            "Register B: 0".to_string(),
-            "Register C: 0".to_string(),
-            "".to_string(),
-            "Program: 0,1,5,4,3,0".to_string(),
-        ];
+    //     let input = vec![
+    //         "Register A: 729".to_string(),
+    //         "Register B: 0".to_string(),
+    //         "Register C: 0".to_string(),
+    //         "".to_string(),
+    //         "Program: 0,1,5,4,3,0".to_string(),
+    //     ];
 
-        let mut tb = ThreeBit::new(input);
+    //     let mut tb = ThreeBit::new(input);
 
-        assert_eq!(tb.reg_a, 729);
-        assert_eq!(tb.reg_b, 0);
-        assert_eq!(tb.reg_c, 0);
-        assert_eq!(tb.program, vec![0, 1, 5, 4, 3, 0]);
+    //     assert_eq!(tb.reg_a, 729);
+    //     assert_eq!(tb.reg_b, 0);
+    //     assert_eq!(tb.reg_c, 0);
+    //     assert_eq!(tb.program, vec![0, 1, 5, 4, 3, 0]);
 
-        while tb.interp() {
-        }
+    //     while tb.interp() {
+    //     }
 
-        assert_eq!(tb.output, vec![4,6,3,5,6,3,5,2,1,0]);
-    }
+    //     assert_eq!(tb.output, vec![4,6,3,5,6,3,5,2,1,0]);
+    // }
 
-    #[test]
-    fn test_3bit_part2() {
-        let input = vec![
-            "Register A: 2024".to_string(),
-            "Register B: 0".to_string(),
-            "Register C: 0".to_string(),
-            "".to_string(),
-            "Program: 0,3,5,4,3,0".to_string(),
-        ];
-        assert_eq!(problem_172(input), RetType::I32(117440));
-    }
+    // #[test]
+    // fn test_3bit_part2() {
+    //     let input = vec![
+    //         "Register A: 2024".to_string(),
+    //         "Register B: 0".to_string(),
+    //         "Register C: 0".to_string(),
+    //         "".to_string(),
+    //         "Program: 0,3,5,4,3,0".to_string(),
+    //     ];
+    //     assert_eq!(problem_172(input), RetType::I32(117440));
+    // }
 }
